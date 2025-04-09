@@ -1,13 +1,18 @@
-import '../Styles/GameCard.css';
+import { Card } from 'react-bootstrap';
 
 const GameCard = ({ game }) => {
   return (
-    <div className="game-card">
-      <h3>{game.nom}</h3>
-      <p>
-        Difficulté : {game.difficulte} | Durée : {game.duree} min | Prix : {game.prix}€ | {game.type}
-      </p>
-    </div>
+    <Card className="h-100">
+      <Card.Body>
+        <Card.Title as="h3">{game.nom}</Card.Title>
+        <Card.Text>
+          <strong>Difficulté :</strong> {game.difficulte} <br />
+          <strong>Durée :</strong> {game.duree} min <br />
+          <strong>Prix :</strong> {game.prix}€ <br />
+          <strong>Type :</strong> {game.type}
+        </Card.Text>
+      </Card.Body>
+    </Card>
   );
 };
 

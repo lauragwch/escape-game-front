@@ -5,6 +5,7 @@ import NavBar from './Components/NavBar';
 import AuthContext from './Contextes/AuthContext';
 import { useState } from 'react';
 import authService from './Services/AuthService';
+import EscapeGamePage from './Pages/EscapeGamePage';
 import './App.css';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <div className="page-container">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/escape-game/:id" element={<EscapeGamePage />} />
             {/* <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/reservations" element={<ReservationPage />} /> */}
