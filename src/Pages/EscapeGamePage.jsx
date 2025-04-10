@@ -1,13 +1,11 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react'; // Plus besoin de useContext
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Card, Button, Badge, ListGroup } from 'react-bootstrap';
-import AuthContext from '../Contextes/AuthContext';
 
 const EscapeGamePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isConnected } = useContext(AuthContext);
   const [escapeGame, setEscapeGame] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,11 +24,7 @@ const EscapeGamePage = () => {
   }, [id]);
 
   const handleReservation = () => {
-    if (!isConnected) {
-      navigate('/login');
-    } else {
-      navigate(`/reservation/${id}`);
-    }
+    navigate(`/reservation/${id}`); // Redirection sans condition
   };
 
   if (loading) return <Container className="mt-5"><p>Chargement...</p></Container>;
@@ -61,8 +55,6 @@ const EscapeGamePage = () => {
               <ListGroup.Item><strong>Prix par personne :</strong> {escapeGame.prix} €</ListGroup.Item>
               <ListGroup.Item><strong>Capacité max :</strong> {escapeGame.capacite_max} joueurs</ListGroup.Item>
             </ListGroup>
-
-            {/* Nouvelle section pour les Escape Games à domicile */}
             {escapeGame.type === 'À domicile' && (
               <>
                 <h4 className="mt-4">Informations pour les Escape Games à domicile</h4>

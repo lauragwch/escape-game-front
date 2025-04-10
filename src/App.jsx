@@ -6,6 +6,7 @@ import AuthContext from './Contextes/AuthContext';
 import { useState } from 'react';
 import authService from './Services/AuthService';
 import EscapeGamePage from './Pages/EscapeGamePage';
+import ReservationPage from './Pages/ReservationPage';
 import './App.css';
 
 function App() {
@@ -21,9 +22,9 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/escape-game/:id" element={<EscapeGamePage />} />
+            <Route path="/reservation/:id" element={<ReservationPage />} />
             {/* <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/reservations" element={<ReservationPage />} /> */}
+            <Route path="/register" element={<RegisterPage />} />*/}
             {role === 'ADMIN' ? (
               <Route path="/admin" element={<AdminPage />} />
             ) : (
