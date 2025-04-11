@@ -24,11 +24,10 @@ const EspaceClient = () => {
     "20:00", "21:00", "22:00", "23:00", "00:00"
   ];
 
-  // Fonction pour obtenir le tarif en fonction du type
+  // Fonction pour obtenir le tarif en fonction de l'ID de l'escape game
   const getPrice = (escapeGameId) => {
     const game = escapeGames.find((g) => g.id === parseInt(escapeGameId, 10));
-    if (!game) return 0;
-    return game.type === 'Sur site' ? 100 : game.type === 'À domicile' ? 180 : 0;
+    return game?.prix || 0;
   };
 
   // Fonction pour obtenir le tarif à partir de la réservation
@@ -60,7 +59,7 @@ const EspaceClient = () => {
       const response = await axios.get('http://localhost:3000/api/escape-games', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Escape Games reçus :', response.data);
+      console.log('Escape Games reçus :', response.data); // Vérifie que capacite_max est inclus
       setEscapeGames(response.data);
     } catch (err) {
       setError('Erreur lors du chargement des escape games : ' + (err.response?.data || err.message));
@@ -69,8 +68,13 @@ const EspaceClient = () => {
 
   const handleAddReservation = async (e) => {
     e.preventDefault();
+    const game = escapeGames.find(g => g.id === parseInt(newReservation.escapeGameId));
+    if (!game || newReservation.numberOfPlayers > game.capacite_max) {
+      setError(`Le nombre de participants ne peut pas dépasser ${game?.capacite_max || 'la capacité maximale'}.`);
+      return;
+    }
     try {
-      const dateTime = `${newReservation.date}T${newReservation.time}:00Z`; // Format ISO
+      const dateTime = `${newReservation.date}T${newReservation.time}:00Z`;
       await axios.post(
         'http://localhost:3000/api/reservations',
         { 
@@ -89,6 +93,11 @@ const EspaceClient = () => {
   };
 
   const handleEditReservation = async (id) => {
+    const game = escapeGames.find(g => g.id === reservations.find(r => r.id === id).escape_game_id);
+    if (!game || editReservation.nombre_participants > game.capacite_max) {
+      setError(`Le nombre de participants ne peut pas dépasser ${game?.capacite_max || 'la capacité maximale'}.`);
+      return;
+    }
     try {
       const dateTime = `${editReservation.date_reservation}T${editReservation.time}:00Z`;
       await axios.put(
@@ -105,12 +114,17 @@ const EspaceClient = () => {
 
   const handleCancel = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/reservations/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log('Envoi de l’annulation pour ID:', id);
+      const response = await axios.put(
+        `http://localhost:3000/api/reservations/${id}/cancel`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log('Réponse du serveur (annulation):', response.data);
       fetchReservations();
     } catch (err) {
       setError('Erreur lors de l’annulation : ' + (err.response?.data || err.message));
+      console.error('Erreur annulation:', err.response?.data || err);
     }
   };
 
@@ -136,7 +150,7 @@ const EspaceClient = () => {
               <option value="">Choisir un Escape Game</option>
               {escapeGames.map((game) => (
                 <option key={game.id} value={game.id}>
-                  {game.nom}
+                  {game.nom} (max {game.capacite_max} pers.)
                 </option>
               ))}
             </select>
@@ -174,6 +188,7 @@ const EspaceClient = () => {
               onChange={(e) => setNewReservation({ ...newReservation, numberOfPlayers: e.target.value })}
               required
               min="1"
+              max={escapeGames.find(g => g.id === parseInt(newReservation.escapeGameId))?.capacite_max || 6}
             />
           </div>
           <div className="col-md-2">
@@ -200,7 +215,7 @@ const EspaceClient = () => {
               <th>Escape Game</th>
               <th>Date</th>
               <th>Participants</th>
-              <th>Tarif</th> {/* Nouvelle colonne */}
+              <th>Tarif</th>
               <th>Statut</th>
               <th>Actions</th>
             </tr>
@@ -211,7 +226,7 @@ const EspaceClient = () => {
                 <td>{res.escape_game_nom}</td>
                 <td>{res.date_reservation}</td>
                 <td>{res.nombre_participants}</td>
-                <td>{getReservationPrice(res)} €</td> {/* Affichage du tarif */}
+                <td>{getReservationPrice(res)} €</td>
                 <td>{res.statut}</td>
                 <td>
                   <button
@@ -271,6 +286,7 @@ const EspaceClient = () => {
                   value={editReservation.nombre_participants}
                   onChange={(e) => setEditReservation({ ...editReservation, nombre_participants: e.target.value })}
                   min="1"
+                  max={escapeGames.find(g => g.id === reservations.find(r => r.id === editReservation.id).escape_game_id)?.capacite_max || 6}
                 />
               </div>
               <div className="col-md-2">

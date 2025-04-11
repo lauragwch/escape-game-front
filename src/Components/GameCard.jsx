@@ -1,4 +1,5 @@
-import { Card } from 'react-bootstrap';
+import { Card, Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 const GameCard = ({ game }) => {
   return (
@@ -8,9 +9,12 @@ const GameCard = ({ game }) => {
         <Card.Text>
           <strong>Difficulté :</strong> {game.difficulte} <br />
           <strong>Durée :</strong> {game.duree} min <br />
-          <strong>Prix :</strong> {game.prix}€ <br />
+          <strong>Prix :</strong> {game.prix} € <br />
           <strong>Type :</strong> {game.type}
         </Card.Text>
+        <Button as={Link} to={`/reservation/${game.id}`} variant="primary">
+          Réserver
+        </Button>
       </Card.Body>
     </Card>
   );

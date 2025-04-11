@@ -1,25 +1,88 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Form, Button, Alert, Row, Col, Modal } from 'react-bootstrap';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import NavBar from '../Components/NavBar'; 
 
 const ReservationPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [date, setDate] = useState(new Date());
-  const [players, setPlayers] = useState(1);
+  const [escapeGame, setEscapeGame] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [reservation, setReservation] = useState({
+    date: '',
+    time: '',
+    numberOfPlayers: 1,
+  });
   const [showModal, setShowModal] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState(''); // Nom (ex. : nom de famille)
-  const [firstName, setFirstName] = useState(''); // Prénom ajouté
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
+  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+
+  const token = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId');
+
+  const timeSlots = [
+    "09:00", "10:00", "11:00", "12:00",
+    "14:00", "15:00", "16:00", "17:00", "18:00", "19:00",
+    "20:00", "21:00", "22:00", "23:00", "00:00"
+  ];
+
+  useEffect(() => {
+    const fetchEscapeGame = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/api/escape-games/${id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        setEscapeGame(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Erreur lors du chargement de l’escape game : ' + (err.response?.data || err.message));
+        setLoading(false);
+      }
+    };
+    fetchEscapeGame();
+  }, [id, token]);
 
   const handleConfirmClick = () => {
-    setShowModal(true);
+    if (!reservation.date || !reservation.time || !reservation.numberOfPlayers) {
+      setError('Veuillez remplir tous les champs.');
+      return;
+    }
+    if (reservation.numberOfPlayers > escapeGame?.capacite_max) {
+      setError(`Le nombre de participants ne peut pas dépasser ${escapeGame.capacite_max}.`);
+      return;
+    }
+    if (token && userId) {
+      handleReserve(); // Si connecté, réserve directement
+    } else {
+      setShowModal(true); // Sinon, ouvre la modale d’inscription
+    }
+  };
+
+  const handleReserve = async () => {
+    try {
+      const dateTime = `${reservation.date}T${reservation.time}:00Z`;
+      await axios.post(
+        'http://localhost:3000/api/reservations',
+        {
+          escape_game_id: id,
+          userId,
+          date: dateTime,
+          numberOfPlayers: reservation.numberOfPlayers,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSuccess(true);
+      setError(null);
+      setTimeout(() => navigate('/espace-client'), 2000);
+    } catch (err) {
+      setError('Erreur lors de la réservation : ' + (err.response?.data || err.message));
+      setSuccess(false);
+    }
   };
 
   const handleRegisterAndReserve = async (e) => {
@@ -27,125 +90,154 @@ const ReservationPage = () => {
     try {
       const registerResponse = await axios.post('http://localhost:3000/api/auth/register', {
         email,
-        mot_de_passe: password, // "password" est la valeur du champ du formulaire
+        mot_de_passe: password,
         name,
         firstName,
       });
       const { userId, token } = registerResponse.data;
-      console.log('Token généré par register :', token);
-  
-      const reservationData = {
-        escapeGameId: id,
-        userId,
-        date: date.toISOString(),
-        numberOfPlayers: players,
-      };
-      console.log('Envoi de la réservation avec token :', token);
-      await axios.post('http://localhost:3000/api/reservations', reservationData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+
+      const dateTime = `${reservation.date}T${reservation.time}:00Z`;
+      await axios.post(
+        'http://localhost:3000/api/reservations',
+        {
+          escape_game_id: id,
+          userId,
+          date: dateTime,
+          numberOfPlayers: reservation.numberOfPlayers,
         },
-      });
-  
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
       setSuccess(true);
       setError(null);
       setShowModal(false);
-      setTimeout(() => navigate('/'), 2000);
+      setTimeout(() => navigate('/espace-client'), 2000);
     } catch (err) {
       setError('Erreur : ' + (err.response?.data?.error || err.message));
       setSuccess(false);
     }
   };
 
-  return (
-    <Container className="mt-5">
-      <h1>Réserver l’Escape Game #{id}</h1>
-      {success && <Alert variant="success">Réservation confirmée ! Redirection...</Alert>}
-      {error && <Alert variant="danger">{error}</Alert>}
-      <Form>
-        <Row>
-          <Col md={6}>
-            <Form.Group className="mb-3" controlId="date">
-              <Form.Label>Date et heure</Form.Label>
-              <DatePicker
-                selected={date}
-                onChange={(date) => setDate(date)}
-                showTimeSelect
-                timeFormat="HH:mm"
-                timeIntervals={30}
-                dateFormat="dd/MM/yyyy HH:mm"
-                className="form-control"
-                minDate={new Date()}
-              />
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group className="mb-3" controlId="players">
-              <Form.Label>Nombre de joueurs</Form.Label>
-              <Form.Control
-                type="number"
-                min="1"
-                value={players}
-                onChange={(e) => setPlayers(e.target.value)}
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-        <Button variant="primary" onClick={handleConfirmClick}>
-          Confirmer maintenant
-        </Button>
-      </Form>
+  if (loading) return <Container className="mt-5 pt-5"><div>Chargement...</div></Container>;
+  if (error && !escapeGame) return <Container className="mt-5 pt-5"><div>Erreur : {error}</div></Container>;
 
-      {/* Modale d’inscription avec Prénom */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Inscription</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleRegisterAndReserve}>
-            <Form.Group className="mb-3" controlId="firstName">
-              <Form.Label>Prénom</Form.Label>
-              <Form.Control
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="name">
-              <Form.Label>Nom</Form.Label>
-              <Form.Control
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="email">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="password">
-              <Form.Label>Mot de passe</Form.Label>
-              <Form.Control
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Button variant="primary" type="submit">
-              S’inscrire et réserver
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-    </Container>
+  return (
+    <div>
+      <NavBar />
+      <Container className="mt-5 pt-5">
+        <h1>Réserver : {escapeGame?.nom}</h1>
+        <p>
+          <strong>Type :</strong> {escapeGame?.type} <br />
+          <strong>Prix :</strong> {escapeGame?.prix} € <br />
+          <strong>Capacité max :</strong> {escapeGame?.capacite_max} personnes
+        </p>
+
+        {success && <Alert variant="success">Réservation confirmée ! Redirection...</Alert>}
+        {error && <Alert variant="danger">{error}</Alert>}
+
+        <Form>
+          <Row className="mb-3">
+            <Col md={4}>
+              <Form.Group controlId="formDate">
+                <Form.Label>Date</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={reservation.date}
+                  onChange={(e) => setReservation({ ...reservation, date: e.target.value })}
+                  required
+                  min={new Date().toISOString().split('T')[0]} // Pas de dates passées
+                />
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group controlId="formTime">
+                <Form.Label>Heure</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={reservation.time}
+                  onChange={(e) => setReservation({ ...reservation, time: e.target.value })}
+                  required
+                >
+                  <option value="">Choisir un horaire</option>
+                  {timeSlots.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group controlId="formParticipants">
+                <Form.Label>Nombre de participants</Form.Label>
+                <Form.Control
+                  type="number"
+                  placeholder="Participants"
+                  value={reservation.numberOfPlayers}
+                  onChange={(e) => setReservation({ ...reservation, numberOfPlayers: e.target.value })}
+                  required
+                  min="1"
+                  max={escapeGame?.capacite_max || 6} // Limite dynamique
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Button variant="primary" onClick={handleConfirmClick}>
+            Confirmer maintenant
+          </Button>
+        </Form>
+
+        {/* Modale d’inscription */}
+        <Modal show={showModal} onHide={() => setShowModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Inscription</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form onSubmit={handleRegisterAndReserve}>
+              <Form.Group className="mb-3" controlId="firstName">
+                <Form.Label>Prénom</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3" controlId="name">
+                <Form.Label>Nom</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3" controlId="email">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3" controlId="password">
+                <Form.Label>Mot de passe</Form.Label>
+                <Form.Control
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </Form.Group>
+              <Button variant="primary" type="submit">
+                S’inscrire et réserver
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
+      </Container>
+    </div>
   );
 };
 
