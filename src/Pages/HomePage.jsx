@@ -1,38 +1,14 @@
 import { useState, useEffect } from 'react';
+import { Container, Card, ListGroup, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { Container, Row, Col, Card, ListGroup } from 'react-bootstrap';
-import NavBar from '../Components/NavBar'; 
-import GameCard from '../Components/GameCard';
-import { fetchEscapeGames } from '../Services/api';
-import 'bootstrap/dist/css/bootstrap.min.css'; 
+import NavBar from '../Components/NavBar';
 import '../Styles/HomePage.css';
 
 const HomePage = () => {
-  const [escapeGames, setEscapeGames] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const loadEscapeGames = async () => {
-      try {
-        const data = await fetchEscapeGames();
-        setEscapeGames(data);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-    loadEscapeGames();
-  }, []);
-
-  if (loading) return <Container className="mt-5"><div>Chargement...</div></Container>;
-  if (error) return <Container className="mt-5"><div>Erreur : {error}</div></Container>;
-
   return (
     <div>
-      <NavBar /> {/* Ajout de la navbar ici */}
-      <Container className="mt-5 pt-5 homepage"> {/* Ajout de pt-5 pour espacement sous la navbar fixée */}
+      <NavBar />
+      <Container className="mt-5 pt-5 homepage">
         <section className="presentation">
           <Card>
             <Card.Body>
@@ -45,21 +21,18 @@ const HomePage = () => {
           </Card>
         </section>
 
-        <section className="escape-games mt-4">
-          <h2>Nos Escape Games</h2>
-          <Row xs={1} md={2} lg={3} className="g-4">
-            {escapeGames.length > 0 ? (
-              escapeGames.map(game => (
-                <Col key={game.id}>
-                  <Link to={`/escape-game/${game.id}`} style={{ textDecoration: 'none' }}>
-                    <GameCard game={game} />
-                  </Link>
-                </Col>
-              ))
-            ) : (
-              <Col><p>Aucun escape game disponible pour le moment.</p></Col>
-            )}
-          </Row>
+        <section className="discover-games mt-4">
+          <Card>
+            <Card.Body>
+              <Card.Title as="h2">Découvrez Nos Escape Games</Card.Title>
+              <Card.Text>
+                Plongez dans des univers captivants et testez vos compétences avec nos escape games uniques. Sur site ou à domicile, il y en a pour tous les goûts !
+              </Card.Text>
+              <Button as={Link} to="/escape-games" variant="primary">
+                Voir les Escape Games
+              </Button>
+            </Card.Body>
+          </Card>
         </section>
 
         <section className="mini-games mt-4">
