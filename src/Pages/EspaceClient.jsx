@@ -31,6 +31,11 @@ const EspaceClient = () => {
     return game.type === 'Sur site' ? 100 : game.type === 'À domicile' ? 180 : 0;
   };
 
+  // Fonction pour obtenir le tarif à partir de la réservation
+  const getReservationPrice = (reservation) => {
+    return reservation.escape_game_type === 'Sur site' ? 100 : reservation.escape_game_type === 'À domicile' ? 180 : 0;
+  };
+
   useEffect(() => {
     if (token && userId) {
       fetchReservations();
@@ -175,7 +180,7 @@ const EspaceClient = () => {
             <input
               type="text"
               className="form-control"
-              value={newReservation.escapeGameId ? `${getPrice(newReservation.escapeGameId)} €` : 'Tarif'}
+              value={newReservation.escapeGameId ? `${getPrice(newReservation.escapeGameId)} €` : 'N/A'}
               readOnly
             />
           </div>
@@ -195,6 +200,7 @@ const EspaceClient = () => {
               <th>Escape Game</th>
               <th>Date</th>
               <th>Participants</th>
+              <th>Tarif</th> {/* Nouvelle colonne */}
               <th>Statut</th>
               <th>Actions</th>
             </tr>
@@ -205,6 +211,7 @@ const EspaceClient = () => {
                 <td>{res.escape_game_nom}</td>
                 <td>{res.date_reservation}</td>
                 <td>{res.nombre_participants}</td>
+                <td>{getReservationPrice(res)} €</td> {/* Affichage du tarif */}
                 <td>{res.statut}</td>
                 <td>
                   <button
@@ -270,7 +277,7 @@ const EspaceClient = () => {
                 <input
                   type="text"
                   className="form-control"
-                  value={reservations.find(res => res.id === editReservation.id) ? `${getPrice(reservations.find(res => res.id === editReservation.id).escape_game_id)} €` : 'N/A'}
+                  value={`${getReservationPrice(reservations.find(res => res.id === editReservation.id))} €`}
                   readOnly
                 />
               </div>
