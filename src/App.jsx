@@ -7,6 +7,8 @@ import { useState } from 'react';
 import authService from './Services/AuthService';
 import EscapeGamePage from './Pages/EscapeGamePage';
 import ReservationPage from './Pages/ReservationPage';
+import LoginPage from './Pages/LoginPage';
+import EspaceClient from './Pages/EspaceClient';
 import './App.css';
 
 function App() {
@@ -23,8 +25,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/escape-game/:id" element={<EscapeGamePage />} />
             <Route path="/reservation/:id" element={<ReservationPage />} />
-            {/* <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />*/}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/espace-client" element={<EspaceClient />} />
             {role === 'ADMIN' ? (
               <Route path="/admin" element={<AdminPage />} />
             ) : (
