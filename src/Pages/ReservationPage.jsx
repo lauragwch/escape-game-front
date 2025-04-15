@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Form, Button, Alert, Row, Col, Modal } from 'react-bootstrap';
-import NavBar from '../Components/NavBar'; 
+import NavBar from '../Components/NavBar';
 
 const ReservationPage = () => {
   const { id } = useParams();
@@ -16,6 +16,7 @@ const ReservationPage = () => {
     time: '',
     numberOfPlayers: 1,
   });
+  const [reservedSlots, setReservedSlots] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,6 +26,7 @@ const ReservationPage = () => {
   const token = localStorage.getItem('token');
   const userId = localStorage.getItem('userId');
 
+  // Créneaux horaires fixes : 9h-12h puis 14h-minuit, toutes les heures
   const timeSlots = [
     "09:00", "10:00", "11:00", "12:00",
     "14:00", "15:00", "16:00", "17:00", "18:00", "19:00",
@@ -37,6 +39,7 @@ const ReservationPage = () => {
         const response = await axios.get(`http://localhost:3000/api/escape-games/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
+        console.log('Escape Game reçu :', response.data);
         setEscapeGame(response.data);
         setLoading(false);
       } catch (err) {
@@ -47,6 +50,22 @@ const ReservationPage = () => {
     fetchEscapeGame();
   }, [id, token]);
 
+  useEffect(() => {
+    const fetchReservedSlots = async () => {
+      if (!reservation.date) return;
+      try {
+        const response = await axios.get('http://localhost:3000/api/reservations/timeslots', {
+          params: { escapeGameId: id, date: reservation.date },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        setReservedSlots(response.data);
+      } catch (err) {
+        console.error('Erreur lors du chargement des créneaux réservés :', err);
+      }
+    };
+    fetchReservedSlots();
+  }, [reservation.date, id, token]);
+
   const handleConfirmClick = () => {
     if (!reservation.date || !reservation.time || !reservation.numberOfPlayers) {
       setError('Veuillez remplir tous les champs.');
@@ -56,10 +75,14 @@ const ReservationPage = () => {
       setError(`Le nombre de participants ne peut pas dépasser ${escapeGame.capacite_max}.`);
       return;
     }
+    if (reservedSlots.includes(reservation.time)) {
+      setError('Ce créneau est déjà réservé.');
+      return;
+    }
     if (token && userId) {
-      handleReserve(); // Si connecté, réserve directement
+      handleReserve();
     } else {
-      setShowModal(true); // Sinon, ouvre la modale d’inscription
+      setShowModal(true);
     }
   };
 
@@ -145,7 +168,7 @@ const ReservationPage = () => {
                   value={reservation.date}
                   onChange={(e) => setReservation({ ...reservation, date: e.target.value })}
                   required
-                  min={new Date().toISOString().split('T')[0]} // Pas de dates passées
+                  min={new Date().toISOString().split('T')[0]}
                 />
               </Form.Group>
             </Col>
@@ -160,8 +183,8 @@ const ReservationPage = () => {
                 >
                   <option value="">Choisir un horaire</option>
                   {timeSlots.map((slot) => (
-                    <option key={slot} value={slot}>
-                      {slot}
+                    <option key={slot} value={slot} disabled={reservedSlots.includes(slot)}>
+                      {slot} {reservedSlots.includes(slot) ? '(Réservé)' : ''}
                     </option>
                   ))}
                 </Form.Control>
@@ -177,7 +200,7 @@ const ReservationPage = () => {
                   onChange={(e) => setReservation({ ...reservation, numberOfPlayers: e.target.value })}
                   required
                   min="1"
-                  max={escapeGame?.capacite_max || 6} // Limite dynamique
+                  max={escapeGame?.capacite_max || 6}
                 />
               </Form.Group>
             </Col>

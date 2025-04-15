@@ -10,6 +10,7 @@ const GameCard = ({ game }) => {
           <strong>Difficulté :</strong> {game.difficulte} <br />
           <strong>Durée :</strong> {game.duree} min <br />
           <strong>Prix :</strong> {game.prix} € <br />
+          <strong>Description: </strong> {game.description} <br />
           <strong>Type :</strong> {game.type}
         </Card.Text>
         <Button as={Link} to={`/reservation/${game.id}`} variant="primary">
