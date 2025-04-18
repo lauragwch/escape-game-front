@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import { Navbar, Nav, NavDropdown, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../Styles/NavBar.css'; 
@@ -37,30 +37,37 @@ const NavBar = () => {
       fixed="top" 
       className={`mb-4 ${scroll ? 'active' : ''}`} 
     >
-      <Navbar.Brand onClick={() => navigate('/')}>Escape Adventure</Navbar.Brand>
-      <Navbar.Toggle aria-controls="basic-navbar-nav" />
-      <Navbar.Collapse id="basic-navbar-nav">
-        <Nav className="me-auto">
-          <Nav.Link onClick={() => navigate('/')}>Accueil</Nav.Link>
-          <Nav.Link onClick={() => navigate('/escape-games')}>
-            Escape Games
-          </Nav.Link>
-          <Nav.Link onClick={() => navigate('/reservations')}>
-            Réservations
-          </Nav.Link>
-          <Nav.Link onClick={() => navigate('/contact')}>Contact</Nav.Link>
-        </Nav>
-        {isConnected ? (
-          <NavDropdown title="Mon Compte" id="account-dropdown">
-            <NavDropdown.Item onClick={() => navigate('/espace-client')}>
-              Espace Client
-            </NavDropdown.Item>
-            <NavDropdown.Item onClick={logout}>Déconnexion</NavDropdown.Item>
-          </NavDropdown>
-        ) : (
-          <Nav.Link onClick={() => navigate('/login')}>Connexion</Nav.Link>
-        )}
-      </Navbar.Collapse>
+       <Container>
+        <Navbar.Brand onClick={() => navigate('/')} className="brand-spacing">Escape Adventure</Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto">
+            <Nav.Link onClick={() => navigate('/')}>Accueil</Nav.Link>
+            <Nav.Link onClick={() => navigate('/escape-games')}>
+              Escape Games
+            </Nav.Link>
+            <Nav.Link onClick={() => navigate('/reservations')}>
+              Réservations
+            </Nav.Link>
+            <Nav.Link onClick={() => navigate('/contact')}>Contact</Nav.Link>
+          </Nav>
+          <div className="account-section">
+            {isConnected ? (
+              <NavDropdown title="Mon Compte" id="account-dropdown">
+                <NavDropdown.Item onClick={() => navigate('/profil')}>
+                  Mon Profil
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={() => navigate('/espace-client')}>
+                  Espace Client
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={logout}>Déconnexion</NavDropdown.Item>
+              </NavDropdown>
+            ) : (
+              <Nav.Link onClick={() => navigate('/login')}>Connexion</Nav.Link>
+            )}
+          </div>
+        </Navbar.Collapse>
+      </Container>
     </Navbar>
   );
 };

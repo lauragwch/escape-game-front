@@ -13,6 +13,11 @@
   font-size: 1.5rem;
 }
 
+.brand-spacing {
+  margin-left: 5px;
+  padding-right: 15px;
+}
+
 .nav-link {
   color: #bdc3c7 !important;
   font-size: 1.1rem;
@@ -33,4 +38,8 @@
 .dropdown-item:hover {
   background-color: #1a252f !important;
   color: #ecf0f1 !important;
+}
+
+.account-section {
+  margin-right: 20px;
 }
