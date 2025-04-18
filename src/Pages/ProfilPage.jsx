@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Form, Button, Row, Col, Alert } from 'react-bootstrap';
+import { Container, Card, Form, Button, Row, Col, Alert, InputGroup } from 'react-bootstrap';
 import axios from 'axios';
 import NavBar from '../Components/NavBar';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+
 
 const ProfilPage = () => {
   const token = localStorage.getItem('token');
@@ -20,6 +22,11 @@ const ProfilPage = () => {
     confirmPassword: ''
   });
 
+  // États pour contrôler la visibilité des mots de passe
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [message, setMessage] = useState({ type: '', text: '' });
   const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(true);
@@ -31,10 +38,12 @@ const ProfilPage = () => {
     }
 
     const fetchUserData = async () => {
+      console.log(`Récupération des informations pour l'utilisateur ID: ${userId}`);
       try {
         const response = await axios.get(`http://localhost:3000/api/clients/${userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+ 
         setUser({
           email: response.data.email || '',
           name: response.data.name || '',
@@ -43,11 +52,23 @@ const ProfilPage = () => {
         });
         setLoading(false);
       } catch (error) {
+        console.error('Erreur complète:', error);
+
+        const errorMessage = error.response?.data?.message || 
+        error.response?.data?.error || 
+        error.message || 
+        'Erreur inconnue';    
+
         setMessage({
           type: 'danger',
           text: 'Erreur lors du chargement des informations: ' + (error.response?.data?.message || error.message)
         });
         setLoading(false);
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('userId');
+          window.location.href = '/login';
+        }
       }
     };
 
@@ -57,7 +78,12 @@ const ProfilPage = () => {
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:3000/api/clients/${userId}`, user, {
+      await axios.put(`http://localhost:3000/api/clients/${userId}`, {
+        name: user.name,
+        firstName: user.firstName,
+        email: user.email,
+        phoneNumber: user.phoneNumber
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessage({ type: 'success', text: 'Profil mis à jour avec succès!' });
@@ -180,32 +206,56 @@ const ProfilPage = () => {
                 <Form onSubmit={handlePasswordChange}>
                   <Form.Group className="mb-3">
                     <Form.Label>Mot de passe actuel</Form.Label>
+                    <InputGroup>
                     <Form.Control
-                      type="password"
+                      type={showCurrentPassword ? "text" : "password"}
                       value={passwordData.currentPassword}
                       onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
                       required
                     />
+                    <Button 
+                        variant="outline-secondary"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      >
+                        {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
+                      </Button>
+                    </InputGroup>
                   </Form.Group>
                   
                   <Form.Group className="mb-3">
                     <Form.Label>Nouveau mot de passe</Form.Label>
+                    <InputGroup>
                     <Form.Control
-                      type="password"
+                      type={showNewPassword ? "text" : "password"}
                       value={passwordData.newPassword}
                       onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
                       required
                     />
+                    <Button 
+                        variant="outline-secondary"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                      </Button>
+                    </InputGroup>
                   </Form.Group>
                   
                   <Form.Group className="mb-3">
                     <Form.Label>Confirmer le mot de passe</Form.Label>
+                    <InputGroup>
                     <Form.Control
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
                       required
                     />
+                    <Button 
+                        variant="outline-secondary"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                      </Button>
+                    </InputGroup>
                   </Form.Group>
                   
                   <Button variant="primary" type="submit" className="w-100">

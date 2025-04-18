@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { Form, Button, Container, Card, InputGroup, Alert } from 'react-bootstrap';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [mot_de_passe, setMotDePasse] = useState('');
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -28,35 +31,66 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Connexion</h2>
-      <form onSubmit={handleLogin} className="w-50 mx-auto">
-        <div className="mb-3">
-          <label className="form-label">Email</label>
-          <input
-            type="email"
-            className="form-control"
-            placeholder="Entrez votre email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Mot de passe</label>
-          <input
-            type="password"
-            className="form-control"
-            placeholder="Entrez votre mot de passe"
-            value={mot_de_passe}
-            onChange={(e) => setMotDePasse(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-primary w-100">Se connecter</button>
-        {error && <p className="text-danger mt-3 text-center">{error}</p>}
-      </form>
-    </div>
+    <Container className="mt-5 pt-5">
+      <div className="d-flex justify-content-center">
+        <Card style={{ width: '450px' }}>
+          <Card.Body>
+            <h2 className="text-center mb-4">Connexion</h2>
+            
+            {error && <Alert variant="danger">{error}</Alert>}
+            
+            <Form onSubmit={handleLogin}>
+              <Form.Group className="mb-3">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  placeholder="Entrez votre email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Mot de passe</Form.Label>
+                <InputGroup>
+                  <Form.Control
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Entrez votre mot de passe"
+                    value={mot_de_passe}
+                    onChange={(e) => setMotDePasse(e.target.value)}
+                    required
+                  />
+                  <Button 
+                    variant="outline-secondary"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </Button>
+                </InputGroup>
+              </Form.Group>
+              
+              <Button variant="primary" type="submit" className="w-100 mb-3">
+                Se connecter
+              </Button>
+              
+              <div className="text-center mt-3">
+                <Link to="/mot-de-passe-oublie" className="text-decoration-none">
+                  Mot de passe oublié ?
+                </Link>
+                </div>
+              
+              <div className="text-center mt-3">
+                <span>Pas encore de compte ? </span>
+                <Link to="/inscription" className="text-decoration-none">
+                  Créer un compte
+                </Link>
+              </div>
+            </Form>
+          </Card.Body>
+        </Card>
+      </div>
+    </Container>
   );
 };
 
