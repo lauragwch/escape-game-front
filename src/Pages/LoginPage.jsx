@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { Form, Button, Container, Card, InputGroup, Alert } from 'react-bootstrap';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import ForgotPasswordModal from '../Components/Modal';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const LoginPage = () => {
@@ -10,6 +11,7 @@ const LoginPage = () => {
   const [mot_de_passe, setMotDePasse] = useState('');
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -26,7 +28,7 @@ const LoginPage = () => {
       setError(null);
       navigate('/espace-client');
     } catch (err) {
-      setError(err.response?.data || 'Erreur de connexion');
+      setError(err.response?.data?.message || 'Identifiants incorrects. Veuillez réessayer.');
     }
   };
 
@@ -75,10 +77,14 @@ const LoginPage = () => {
               </Button>
               
               <div className="text-center mt-3">
-                <Link to="/mot-de-passe-oublie" className="text-decoration-none">
+                <Button 
+                  variant="link" 
+                  className="text-decoration-none p-0"
+                  onClick={() => setShowForgotPasswordModal(true)}
+                >
                   Mot de passe oublié ?
-                </Link>
-                </div>
+                </Button>
+              </div>
               
               <div className="text-center mt-3">
                 <span>Pas encore de compte ? </span>
@@ -90,6 +96,11 @@ const LoginPage = () => {
           </Card.Body>
         </Card>
       </div>
+      
+      <ForgotPasswordModal 
+        show={showForgotPasswordModal} 
+        onHide={() => setShowForgotPasswordModal(false)} 
+      />
     </Container>
   );
 };
