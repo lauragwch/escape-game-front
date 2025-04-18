@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar, Nav, NavDropdown, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { FaUserCircle } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../Styles/NavBar.css'; 
 
 const NavBar = () => {
   const [scroll, setScroll] = useState(false);
   const navigate = useNavigate();
-  const token = localStorage.getItem('token'); // C'est le système d'authentification
+  const token = localStorage.getItem('token');
   const isConnected = !!token;
 
   // Gestion du scroll
@@ -37,7 +38,7 @@ const NavBar = () => {
       fixed="top" 
       className={`mb-4 ${scroll ? 'active' : ''}`} 
     >
-       <Container>
+      <Container>
         <Navbar.Brand onClick={() => navigate('/')} className="brand-spacing">Escape Adventure</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
@@ -53,7 +54,11 @@ const NavBar = () => {
           </Nav>
           <div className="account-section">
             {isConnected ? (
-              <NavDropdown title="Mon Compte" id="account-dropdown">
+              <NavDropdown 
+                title={<FaUserCircle size={24} />} 
+                id="account-dropdown"
+                align="end"
+              >
                 <NavDropdown.Item onClick={() => navigate('/profil')}>
                   Mon Profil
                 </NavDropdown.Item>
@@ -63,7 +68,18 @@ const NavBar = () => {
                 <NavDropdown.Item onClick={logout}>Déconnexion</NavDropdown.Item>
               </NavDropdown>
             ) : (
-              <Nav.Link onClick={() => navigate('/login')}>Connexion</Nav.Link>
+              <NavDropdown 
+                title={<FaUserCircle size={24} />} 
+                id="account-dropdown"
+                align="end"
+              >
+                <NavDropdown.Item onClick={() => navigate('/login')}>
+                  Connexion
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={() => navigate('/inscription')}>
+                  Inscription
+                </NavDropdown.Item>
+              </NavDropdown>
             )}
           </div>
         </Navbar.Collapse>

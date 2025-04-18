@@ -11,6 +11,7 @@ import LoginPage from './Pages/LoginPage';
 import EspaceClient from './Pages/EspaceClient';
 import EscapeGamesPage from './Pages/EscapeGamesPage';
 import ProfilPage from './Pages/ProfilPage';
+import InscriptionPage from './Pages/InscriptionPage';
 // import ReservationsPage from './Pages/ReservationsPage';
 // import ContactPage from './Pages/ContactPage';
 // import AdminPage from './Pages/AdminPage';
@@ -34,6 +35,7 @@ function App() {
             <Route path="/reservation/:id" element={<ReservationPage />} />
             {/* <Route path="/contact" element={<ContactPage />} /> */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/inscription" element={<InscriptionPage />} />
             <Route path="/espace-client" element={<EspaceClient />} />
             <Route path="/profil" element={<ProfilPage />} />
             {role === 'ADMIN' && <Route path="/admin" element={<AdminPage />} />}

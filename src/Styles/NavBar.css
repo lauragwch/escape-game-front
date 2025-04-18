@@ -43,3 +43,18 @@
 .account-section {
   margin-right: 20px;
 }
+
+.account-section svg {
+  color: #ecf0f1;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.account-section svg:hover {
+  transform: scale(1.1);
+  color: #3498db;
+}
+
+#account-dropdown {
+  padding: 0.25rem 0.5rem;
+}
