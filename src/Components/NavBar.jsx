@@ -39,16 +39,13 @@ const NavBar = () => {
       className={`mb-4 ${scroll ? 'active' : ''}`} 
     >
       <Container>
-        <Navbar.Brand onClick={() => navigate('/')} className="brand-spacing">Escape Adventure</Navbar.Brand>
+        <Navbar.Brand onClick={() => navigate('/')} className="brand-spacing">Énigmes Évadées</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <Nav.Link onClick={() => navigate('/')}>Accueil</Nav.Link>
             <Nav.Link onClick={() => navigate('/escape-games')}>
               Escape Games
-            </Nav.Link>
-            <Nav.Link onClick={() => navigate('/reservations')}>
-              Réservations
             </Nav.Link>
             <Nav.Link onClick={() => navigate('/contact')}>Contact</Nav.Link>
           </Nav>
